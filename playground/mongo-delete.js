@@ -1,5 +1,3 @@
-// mongo client help you connect to the database and manipulate the
-// database
 const { MongoClient, ObjectId } = require('mongodb');
 
 MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
@@ -16,7 +14,7 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
     //     console.log('Can not delete that');
     // });
 
-    // deleteOne: delete the first item match the filter
+    // // deleteOne: delete the first item match the filter
     // db.collection('Todos').deleteOne({text: 'Eat dinner'}).then((result) => {
     //     console.log(result);
     // }, (err) => {
@@ -32,8 +30,10 @@ MongoClient.connect('mongodb://localhost:27017/TodoApp', (err, db) => {
     // });
 
     // practice
-    db.collection('Users').findOneAndDelete({ _id: new ObjectId("5b016f5e76138f2abc433f95") }).then((result) => {
+    db.collection('todos').findOneAndDelete({text: '  Finish things  '}).then((result) => {
         console.log(result);
+    }, (err) => {
+        console.log('Unable to remove', err);
     });
 
     db.close();
