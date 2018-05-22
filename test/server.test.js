@@ -3,6 +3,7 @@ const expect = require('expect');
 
 const { app } = require('../server/server');
 const {Todo} = require('../server/model/todo');
+const { ObjectID } = require('mongodb');
 
 // this delete database before running test
 const todos = [{
@@ -10,10 +11,16 @@ const todos = [{
 }, {
     text: 'Second test todo'
 }];
+
+let id;
+
 beforeEach((done) => {
     Todo.remove({}).then(() => {
         return Todo.insertMany(todos);
-    }).then(() => done());
+    }).then((res) => {
+        id = res[0]._id;
+        done();
+    });
 });
 
 describe('POST /todos', () => {
@@ -56,16 +63,44 @@ describe('POST /todos', () => {
               }).catch((e) => done(e));
           })
     });
+});
 
-    describe('GET /todos', () => {
-        it('should get all todos', (done) => {
-            request(app)
-              .get('/todos')
-              .expect(200)
-              .expect((res) => {
-                  expect(res.body.todos.length).toBe(2);
-              })
-              .end(done);
-        })
+describe('GET /todos', () => {
+    it('should get all todos', (done) => {
+        request(app)
+          .get('/todos')
+          .expect(200)
+          .expect((res) => {
+              expect(res.body.todos.length).toBe(2);
+          })
+          .end(done);
+    })
+});
+
+describe('GET /todos/:id', () => {
+    it('should get the todo from the id', (done) => {
+        request(app)
+          .get(`/todos/${id}`)
+          .expect(200)
+          .expect((res) => {
+              expect(res.body.doc).toInclude({ text: 'First test todo'});
+          })
+          .end(done);
+    })
+
+    it('should return text if id not found', (done) => {
+        let newID = id + '1';
+        request(app)
+          .get(`/todos/${newID}`)
+          .expect(404)
+          .end(done);
+    })
+
+    it('should return text if id not found', (done) => {
+        let newID = new ObjectID().toHexString();
+        request(app)
+          .get(`/todos/${newID}`)
+          .expect(404)
+          .end(done);
     })
 });
