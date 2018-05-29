@@ -7,9 +7,11 @@ const { ObjectID } = require('mongodb');
 
 // this delete database before running test
 const todos = [{
-    text: 'First test todo'
+    text: 'First test todo',
+    _id: new ObjectID()
 }, {
-    text: 'Second test todo'
+    text: 'Second test todo',
+    _id: new ObjectID()
 }];
 
 let id;
@@ -103,4 +105,28 @@ describe('GET /todos/:id', () => {
           .expect(404)
           .end(done);
     })
+});
+
+describe('Delete /todos/:id', () => {
+    it('should remove a todo', (done) => {
+        let hexId = todos[0]._id.toHexString();
+        request(app)
+          .delete(`/todos/${hexId}`)
+          .expect(200)
+          .expect(res => {
+              expect(res.body.doc._id).toBe(hexId);
+          })
+          .end((err, res) => {
+            if (err) {
+                return done(err);
+            }
+
+            Todo.findById(hexId).then((doc) => {
+              expect(doc).toNotExist();
+              done();
+            }).catch(e => {
+                done(e);
+            });
+          });
+    });
 });
